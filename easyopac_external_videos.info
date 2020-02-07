@@ -1,0 +1,26 @@
+name = easyOPAC External Videos
+description = Requests and display videos related to search result items.
+core = 7.x
+package = easyOPAC
+dependencies[] = ctools
+dependencies[] = features
+dependencies[] = field_group
+dependencies[] = ting_material_details
+dependencies[] = virtual_field
+stylesheets[all][] = css/easyopac_external_videos.css
+configure = admin/config/external-videos
+explanation = Field type(s) in use - see <a href="/admin/reports/fields">Field list</a>
+features[ctools][] = field_group:field_group:1
+features[features_api][] = api:2
+features[features_override_items][] = field_group.group_ting_object_right_column|ting_object|ting_object|default
+features[features_overrides][] = field_group.group_ting_object_right_column|ting_object|ting_object|default.data|children|1
+features[features_overrides][] = field_group.group_ting_object_right_column|ting_object|ting_object|default.data|children|2
+features[features_overrides][] = field_group.group_ting_object_right_column|ting_object|ting_object|default.data|children|3
+features[features_overrides][] = field_group.group_ting_object_right_column|ting_object|ting_object|default.data|children|4
+features[features_overrides][] = field_group.group_ting_object_right_column|ting_object|ting_object|default.data|children|5
+features[features_overrides][] = field_group.group_ting_object_right_column|ting_object|ting_object|default.data|children|6
+features[features_overrides][] = field_group.group_ting_object_right_column|ting_object|ting_object|default.data|children|7
+features[features_overrides][] = field_group.group_ting_object_right_column|ting_object|ting_object|default.data|children|8
+features[field_base][] = field_easyopac_external_videos
+features[field_group][] = group_related_videos|ting_object|ting_object|default
+features[field_instance][] = ting_object-ting_object-field_easyopac_external_videos

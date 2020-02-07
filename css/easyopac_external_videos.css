@@ -1,0 +1,7 @@
+.videos-wrapper { list-style: none; margin: 0; padding: 0; }
+.videos-wrapper .video-item { margin: 20px 0; display: flex; }
+.videos-wrapper .video-item .video-thumbnail { margin-right: 20px; min-width: 120px; }
+@media only screen and (max-width: 600px) { .videos-wrapper .video-item .video-description { display: none; } }
+
+.videos-spinner { display: inline-block; width: 24px; height: 24px; padding: 20px; background: transparent url("../images/loading.gif") no-repeat center center; }
+.videos-spinner.field-items { width: 100%; text-align: center; }

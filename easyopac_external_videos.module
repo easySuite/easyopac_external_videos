@@ -1,0 +1,202 @@
+<?php
+
+/**
+ * @file
+ * External videos module base functionality.
+ */
+
+include_once 'easyopac_external_videos.features.inc';
+
+/**
+ * Implements hook_menu().
+ */
+function easyopac_external_videos_menu() {
+  $items['admin/config/external-videos'] = [
+    'title' => 'External Videos',
+    'description' => 'Configure LMS service for requesting external resources.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['easyopac_external_videos_settings_form'],
+    'access arguments' => ['administer site configuration'],
+    'file' => 'easyopac_external_videos.admin.inc',
+  ];
+
+  $items['videos/%'] = [
+    'title' => 'Request for videos to LMS',
+    'description' => 'Configure LMS service for requesting external resources.',
+    'page callback' => 'easyopac_external_videos_ajax_request',
+    'page arguments' => [1],
+    'access callback' => TRUE,
+  ];
+
+  return $items;
+}
+
+/**
+ * Custom menu callback.
+ *
+ * Make request to LMS and return video items.
+ *
+ * @param string $id
+ *   Material id of viewed item.
+ *
+ * @throws \Exception
+ */
+function easyopac_external_videos_ajax_request($id) {
+  $element = [];
+  $videos = easyopac_external_videos_make_request($id);
+  $videos = reset($videos);
+
+  if (!empty($videos)) {
+    $element = [
+      '#theme' => 'video_items_list',
+      '#attributes' => [
+        'class' => 'videos',
+      ],
+    ];
+
+    foreach ($videos as $video) {
+      $element['#items'][] = theme('video_item', $video);
+    }
+  }
+
+  drupal_json_output(drupal_render($element));
+  drupal_exit();
+}
+
+/**
+ * Implements hook_field_info().
+ */
+function easyopac_external_videos_field_info() {
+  return [
+    'easyopac_external_videos' => [
+      'label' => t('External videos'),
+      'description' => t('External videos related to object.'),
+      'default_widget' => 'hidden',
+      'default_formatter' => 'easyopac_external_videos_default',
+      'virtual_field' => [
+        'entity_types' => ['ting_object'],
+        'add_widget' => TRUE,
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function easyopac_external_videos_field_formatter_info() {
+  return [
+    'easyopac_external_videos_default' => [
+      'label' => t('Default'),
+      'field types' => [
+        'easyopac_external_videos',
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_field_load().
+ */
+function easyopac_external_videos_field_load($entity_type, $entities, $field, $instances, $langcode, &$items, $age) {
+  foreach ($entities as $id => $entity) {
+    $items[$id][0] = [
+      'provider_id' => $entity->localId,
+    ];
+  }
+}
+
+/**
+ * Implements hook_field_widget_info_alter().
+ */
+function easyopac_external_videos_field_widget_info_alter(&$info) {
+  if (isset($info['hidden'])) {
+    $info['hidden']['field types'][] = 'easyopac_external_videos';
+  }
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ *
+ * @throws \Exception
+ */
+function easyopac_external_videos_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $online_types = _easyopac_external_videos_trigger_types();
+
+  if (!in_array(strtolower($entity->type), $online_types)) {
+    return;
+  }
+
+  drupal_add_js(drupal_get_path('module', 'easyopac_external_videos') . '/js/easyopac_external_videos.js', 'file');
+
+  return [
+    '#type' => 'container',
+    '#attributes' => [
+      'id' => 'videos',
+      'data-provider-id' => $items[0]['provider_id'],
+    ]
+  ];
+}
+
+/**
+ * Perform request to LMS.
+ *
+ * @param string $id
+ *   Material id of searched item.
+ *
+ * @return array|void
+ */
+function easyopac_external_videos_make_request($id) {
+  $lms_service_url = variable_get('easyopac_external_videos_lms_service_url', NULL);
+
+  if (empty($lms_service_url)) {
+    return;
+  }
+
+  $items = [];
+  $options = [
+    'faustNumber' => $id,
+    'withExternalResources' => NULL,
+  ];
+  $url = url($lms_service_url . '/detail', ['query' => $options]);
+
+  $response = drupal_http_request($url);
+  if ($response->code == '200') {
+    $data = drupal_json_decode($response->data);
+    if (!empty($data['externalResources'])) {
+      $items[] = isset($data['externalResources']['videos']) ? $data['externalResources']['videos'] : NULL;
+    }
+  }
+
+  return $items;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function easyopac_external_videos_theme($existing, $type, $theme, $path) {
+  return [
+    'video_items_list' => [
+      'variables' => [
+        'items' => NULL,
+      ],
+      'template' => 'templates/videos-wrapper',
+    ],
+    'video_item' => [
+      'variables' => [
+        'item' => NULL,
+      ],
+      'template' => 'templates/videos-item',
+    ],
+  ];
+}
+
+/**
+ * Get available online types.
+ *
+ * @return array
+ */
+function _easyopac_external_videos_trigger_types() {
+  $online_types = variable_get('easyopac_external_videos_online_types', _ting_default_online_types());
+  return array_filter($online_types);
+}
