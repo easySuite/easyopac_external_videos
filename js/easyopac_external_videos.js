@@ -17,7 +17,7 @@
         $.ajax({
           url: "/videos/" + providerId,
         }).done(function (data) {
-          if (data.length !== '') {
+          if (data.length !== 0) {
             videosWrapper.find('.field-items').removeClass('videos-spinner').append(data);
           }
           else {
