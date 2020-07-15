@@ -14,8 +14,10 @@
     $(fieldGroupActivator).on('click', function () {
       if (!loaded) {
         videosWrapper.find('.field-items').addClass('videos-spinner');
-        $.ajax({
-          url: "/videos/" + providerId,
+        let postData = { faustNumber: providerId };
+        $.post({
+          url: "/videos",
+          data: postData
         }).done(function (data) {
           if (data.length !== 0) {
             videosWrapper.find('.field-items').removeClass('videos-spinner').append(data);
