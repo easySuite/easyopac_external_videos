@@ -158,6 +158,7 @@ function easyopac_external_videos_make_request($id) {
     'faustNumber' => $id,
     'withExternalResources' => NULL,
     'withNoCover' => NULL,
+    '_source' => 'easyopac_external_videos',
   ];
   $url = url($lms_service_url . '/detail', ['query' => $options]);
 
