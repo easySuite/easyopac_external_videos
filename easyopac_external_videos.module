@@ -20,11 +20,10 @@ function easyopac_external_videos_menu() {
     'file' => 'easyopac_external_videos.admin.inc',
   ];
 
-  $items['videos/%'] = [
+  $items['videos'] = [
     'title' => 'Request for videos to LMS',
     'description' => 'Configure LMS service for requesting external resources.',
     'page callback' => 'easyopac_external_videos_ajax_request',
-    'page arguments' => [1],
     'access callback' => TRUE,
   ];
 
@@ -36,13 +35,17 @@ function easyopac_external_videos_menu() {
  *
  * Make request to LMS and return video items.
  *
- * @param string $id
- *   Material id of viewed item.
- *
  * @throws \Exception
  */
-function easyopac_external_videos_ajax_request($id) {
+function easyopac_external_videos_ajax_request() {
   $element = [];
+
+  $id = $_POST['faustNumber'];
+
+  if (empty($id) || preg_match('/^[0-9]*$/', $id) === FALSE) {
+    return;
+  }
+
   $videos = easyopac_external_videos_make_request($id);
   $videos = reset($videos);
 
