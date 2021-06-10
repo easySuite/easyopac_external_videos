@@ -126,7 +126,7 @@ function easyopac_external_videos_field_widget_info_alter(&$info) {
 function easyopac_external_videos_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $online_types = _easyopac_external_videos_trigger_types();
 
-  if (!in_array(strtolower($entity->type), $online_types)) {
+  if (!in_array(mb_strtolower($entity->type), $online_types, TRUE)) {
     return;
   }
 
@@ -137,7 +137,7 @@ function easyopac_external_videos_field_formatter_view($entity_type, $entity, $f
     '#attributes' => [
       'id' => 'videos',
       'data-provider-id' => $items[0]['provider_id'],
-    ]
+    ],
   ];
 }
 
@@ -169,7 +169,7 @@ function easyopac_external_videos_make_request($id) {
   if ($response->code == '200') {
     $data = drupal_json_decode($response->data);
     if (!empty($data['externalResources'])) {
-      $items[] = isset($data['externalResources']['videos']) ? $data['externalResources']['videos'] : NULL;
+      $items[] = $data['externalResources']['videos'] ?? NULL;
     }
   }
 
@@ -210,12 +210,15 @@ function _easyopac_external_videos_trigger_types() {
  * Implements hook_field_group_build_pre_render_alter().
  */
 function easyopac_external_videos_field_group_build_pre_render_alter(&$element) {
-  $fg_length = count($element['group_ting_object_right_column']);
-  if (!in_array('group_related_videos', array_keys($element['group_ting_object_right_column']))) {
-    $element['group_ting_object_right_column']['group_related_videos'] = $element['group_related_videos'];
-    $element['group_ting_object_right_column']['group_related_videos']['#weight'] = $fg_length + 1;
-  }
-  else if ($element['group_ting_object_right_column']['group_related_videos']['#weight'] < 8) {
-    $element['group_ting_object_right_column']['group_related_videos']['#weight'] = $fg_length + 1;
+  if (isset($element['group_ting_object_right_column'])) {
+    $fg_length = count($element['group_ting_object_right_column']);
+
+    if (!array_key_exists('group_related_videos', $element['group_ting_object_right_column'])) {
+      $element['group_ting_object_right_column']['group_related_videos'] = $element['group_related_videos'];
+      $element['group_ting_object_right_column']['group_related_videos']['#weight'] = $fg_length + 1;
+    }
+    elseif ($element['group_ting_object_right_column']['group_related_videos']['#weight'] < 8) {
+      $element['group_ting_object_right_column']['group_related_videos']['#weight'] = $fg_length + 1;
+    }
   }
 }
