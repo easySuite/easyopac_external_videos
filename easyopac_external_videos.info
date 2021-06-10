@@ -1,6 +1,6 @@
 name = easyOPAC External Videos
 description = Requests and display videos related to search result items.
-version = 7.x-6.1.0
+version = 7.x-6.2.1
 core = 7.x
 package = easyOPAC
 dependencies[] = ctools
